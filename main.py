@@ -23,7 +23,7 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-df = pd.read_csv('out/files/processed.csv')
+df = pd.read_csv('in/tables/parts.csv')
     
 if "messages" not in st.session_state:
     st.session_state.messages = []
