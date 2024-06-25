@@ -59,7 +59,7 @@ qa = RetrievalQA.from_chain_type(
     llm=OpenAI(), chain_type="stuff", retriever=vectorstore.as_retriever()
 )
 
-user_input = st.chat_input("ask_a_question")
+user_input = st.chat_input("Ask a question...")
 
 if user_input:
     # Add user message to the chat
@@ -93,12 +93,6 @@ with st.container():
         if message["role"] =="user":
             last_user_message = message
             break  
-
-
-
-
-
-
 
 
 # return qa.invoke(query)
