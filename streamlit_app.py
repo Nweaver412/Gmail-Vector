@@ -1,8 +1,6 @@
 import re
 import os
 import logging
-import json
-import lancedb
 
 import pandas as pd
 import numpy as np
