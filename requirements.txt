@@ -1,13 +1,8 @@
-beautifulsoup4==4.12.3
 lancedb==0.9.0
 langchain==0.2.6
-langchain-community==0.2.6
-langchain-openai==0.1.13
-llama-index==0.7.17
-llama-index
-streamlit
+llama_index==0.10.51
 pandas
-numpy
+pyarrow==14.0.2
 python-dotenv
-
-
+sentence_transformers==3.0.1
+streamlit==1.34.0
