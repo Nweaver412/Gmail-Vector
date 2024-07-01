@@ -1,7 +1,6 @@
 import re
 import os
 import logging
-import openai
 import json
 import lancedb
 
