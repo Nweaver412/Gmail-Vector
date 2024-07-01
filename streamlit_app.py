@@ -1,62 +1,60 @@
-import re
 import os
 import logging
-
-import pandas as pd
-import numpy as np
 import streamlit as st
+import openai
+import lancedb
 
-from dotenv import load_dotenv
-from bs4 import BeautifulSoup
-
-from langchain.vectorstores import LanceDB
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAI, OpenAIEmbeddings
-from langchain.chains import RetrievalQA
+from llama_index.chat_engine import CondenseQuestionChatEngine
+from llama_index.chat_engine.condense_question import ChatMessage
 from langchain.callbacks import StreamlitCallbackHandler
+from llama_index.vector_stores import LanceDBVectorStore
+from llama_index import VectorStoreIndex, SimpleDirectoryReader
+from llama_index.prompts import Prompt
+from dotenv import load_dotenv
 
+# Load environment variables and set up logging
 load_dotenv()
-
 logging.basicConfig(level=logging.INFO)
-
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-df = pd.read_csv('in/tables/parts.csv')
-    
+
+# Initialize LanceDB
+db = lancedb.connect("output/email_embeddings.lance")
+table = db["email_embeddings"]
+
+# Create LanceDB vector store
+vector_store = LanceDBVectorStore(table)
+
+# Custom prompt for question condensing
+custom_prompt = Prompt("""\
+Given a conversation (between Human and Assistant) and a follow up message from Human, \
+rewrite the message to be a standalone question that captures all relevant context \
+from the conversation. 
+<Chat History> 
+{chat_history}
+<Follow Up Message>
+{question}
+<Standalone question>
+""")
+
+# Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
-    ai_intro = "Hello, I'm Kai, your AI SQL Bot. I'm here to assist you with SQL queries.What can I do for you?"
-    
-    st.session_state.messages.append({"role":"assistant", "content" : ai_intro})
+    ai_intro = "Hello, I'm Kai, your AI SQL Bot. I'm here to assist you with SQL queries. What can I do for you?"
+    st.session_state.messages.append({"role": "assistant", "content": ai_intro})
 
-def simple_text_splitter(text, chunk_size=1000, overlap=200):
-    chunks = []
-    start = 0
-    while start < len(text):
-        # If not the first chunk, start earlier to create an overlap
-        if start > 0 and (start - overlap) > 0:
-            start -= overlap
-        end = start + chunk_size
-        if end > len(text):
-            end = len(text)
-        chunks.append(text[start:end])
-        start += chunk_size
-    return chunks
+# Create index and query engine
+index = VectorStoreIndex.from_vector_store(vector_store)
+query_engine = index.as_query_engine()
 
-docs = df['bodyData'].tolist()
-
-chunk_size = 1000
-overlap = 200
-
-document_chunks = [chunk for doc in docs for chunk in simple_text_splitter(doc, chunk_size, overlap)]
-
-embeddings = OpenAIEmbeddings()
-vectorstore = LanceDB.from_documents(documents=document_chunks, embedding=embeddings)
-
-qa = RetrievalQA.from_chain_type(
-    llm=OpenAI(), chain_type="stuff", retriever=vectorstore.as_retriever()
+# Create chat engine
+chat_engine = CondenseQuestionChatEngine.from_defaults(
+    query_engine=query_engine,
+    condense_question_prompt=custom_prompt,
+    verbose=True
 )
 
-user_input = st.chat_input("Ask a question...")
+# Streamlit UI
+user_input = st.chat_input("Ask a question")
 
 if user_input:
     # Add user message to the chat
@@ -64,32 +62,27 @@ if user_input:
         st.markdown(user_input)
     # Add user message to session state
     st.session_state.messages.append({"role": "user", "content": user_input})
+    
     # Display "Kai is typing..."
     with st.chat_message("Kai"):
-        st.markdown("typing")
+        message_placeholder = st.empty()
+        message_placeholder.markdown("Kai is typing...")
+    
+    # Generate response
     st_callback = StreamlitCallbackHandler(st.container())
-    response = qa.invoke(user_input)
-
+    response = chat_engine.chat(user_input)
+    
     # Add Kai's message to session state
-    st.session_state.messages.append({"role": "assistant", "content": response})
+    st.session_state.messages.append({"role": "assistant", "content": str(response)})
+    
     # Display Kai's message
-    with st.chat_message("Kai"):
-        st.markdown(response)
-        # Display source nodes for Kai's response
-        #st.write(response.source_nodes)
+    message_placeholder.markdown(str(response))
 
+# Display chat history
 with st.container():    
-    last_output_message = []
-    last_user_message = []
-
-    for message in reversed(st.session_state.messages):
-        if message["role"] == "Kai":
-            last_output_message = message
-            break
-    for message in reversed(st.session_state.messages):
-        if message["role"] =="user":
-            last_user_message = message
-            break  
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
 
 # return qa.invoke(query)
