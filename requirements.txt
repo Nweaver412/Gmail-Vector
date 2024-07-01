@@ -1,8 +1,10 @@
-lancedb==0.9.0
+lancedb==0.8.2
 langchain==0.2.6
 llama_index==0.10.51
-pandas
-pyarrow==14.0.2
-python-dotenv
+pyarrow==15.0.0
 sentence_transformers==3.0.1
-streamlit==1.34.0
+streamlit==1.36.0
+pandas
+python-dotenv
+
+
