@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize LanceDB
-db = lancedb.connect("output/email_embeddings.lance")
+db = lancedb.connect("out/files/embedded.csv")
 table = db["email_embeddings"]
 
 # Create LanceDB vector store
