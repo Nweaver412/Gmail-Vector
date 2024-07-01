@@ -1,7 +1,8 @@
 beautifulsoup4==4.12.3
 lancedb==0.9.0
 langchain==0.2.6
-langchain_openai==0.1.13
+langchain-community==0.2.6
+langchain-openai==0.1.13
 llama-index==0.7.17
 llama-index
 streamlit
