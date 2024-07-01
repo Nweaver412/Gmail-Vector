@@ -1,7 +1,6 @@
 import os
 import logging
 import streamlit as st
-import openai
 import lancedb
 
 from llama_index.chat_engine import CondenseQuestionChatEngine
