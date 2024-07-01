@@ -1,6 +1,7 @@
 import re
 import os
 import logging
+import openai
 import json
 import lancedb
 
@@ -10,8 +11,6 @@ import streamlit as st
 
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
-
-from openai import OpenAI
 
 from langchain.vectorstores import LanceDB
 from langchain.text_splitter import RecursiveCharacterTextSplitter
