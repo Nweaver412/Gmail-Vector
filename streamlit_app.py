@@ -3,6 +3,7 @@ import logging
 import streamlit as st
 import pandas as pd
 import numpy as np
+import openai
 import lancedb
 
 from llama_index.core import SimpleDirectoryReader, Document, StorageContext
