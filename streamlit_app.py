@@ -19,10 +19,10 @@ logging.basicConfig(level=logging.INFO)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize LanceDB
-uri = "out/files/embedded.csv"
+uri = "in/files/embedded.csv"
 db = lancedb.connect(uri)
 
-df = pd.read_csv("embedded.csv")
+df = pd.read_csv("in/files/embedded.csv")
 
 table = db.create_table("embeddings_table", data=df)
 
