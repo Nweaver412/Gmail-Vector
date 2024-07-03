@@ -20,16 +20,18 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize LanceDB
 path = "/data/in/tables/embedded-gmail.csv"
-uri = "/data/lancedb"
 
-db = lancedb.connect(uri)
-
+# Read the CSV file
 df = pd.read_csv(path)
 
+# Create table from DataFrame
+db = lancedb()
 tbl_df = db.create_table("table_from_df", data=df)
 table = db.open_table("table_from_df")
 
-vector_store = LanceDBVectorStore(table, embedding_field="embedding", text_field="bodyData")
+# Initialize vector store with specified embedding and text fields
+vector_store = LanceDBVectorStore(table, embedding_field="embedded", text_field="bodyData")
+
 
 # Custom prompt for question condensing
 custom_prompt = Prompt("""\
