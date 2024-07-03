@@ -18,12 +18,43 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-# Initialize LanceDB
 file_path = "/data/in/tables/embedded-gmail.csv"
+db_path = "lancedb_data"
 
-db = lancedb.connect(file_path)
+os.makedirs(db_path, exist_ok=True)
 
-vector_store = LanceDBVectorStore(db, embedding_field="embedding", text_field="bodyData")
+db = lancedb.connect(db_path)
+
+def string_to_list(s):
+    try:
+        return np.fromstring(s.strip("[]"), sep=',')
+    except ValueError:
+        return np.array([])  # Return an empty array if conversion fails
+
+# Check if the table already exists
+if "embeddings_table" not in db.table_names():
+    try:
+        # Read the CSV file
+        df = pd.read_csv(file_path)
+        
+        if 'embedding' not in df.columns or 'bodyData' not in df.columns:
+            raise ValueError("The CSV file must contain 'embedding' and 'bodyData' columns")
+        
+        # Convert string representation of embedding to list
+        df['embedding'] = df['embedding'].apply(string_to_list)
+        
+        # Create the table
+        table = db.create_table("embeddings_table", data=df)
+        st.success(f"Successfully created LanceDB table from {file_path}")
+    except Exception as e:
+        st.error(f"Error creating LanceDB table: {str(e)}")
+        st.stop()
+else:
+    table = db.open_table("embeddings_table")
+    st.info("Using existing LanceDB table")
+
+# Initialize LanceDBVectorStore
+vector_store = LanceDBVectorStore(table, embedding_field="embedding", text_field="bodyData")
 
 # Custom prompt for question condensing
 custom_prompt = Prompt("""\
