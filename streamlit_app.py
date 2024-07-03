@@ -18,7 +18,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize LanceDB
 db = lancedb.connect("out/files/embedded.csv")
-table = db["email_embeddings"]
+table = db["embedding"]
 
 # Create LanceDB vector store
 vector_store = LanceDBVectorStore(table)
