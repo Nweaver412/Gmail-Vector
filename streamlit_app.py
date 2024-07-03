@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize LanceDB
-file_path = "/data/in/files/1149724835_embedded.csv"
+file_path = "/data/in/tables/embedded-gmail.csv"
 
 db = lancedb.connect(file_path)
 
