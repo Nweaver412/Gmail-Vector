@@ -22,7 +22,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 # Initialize LanceDB
 path = "/data/in/tables/embedded-gmail.csv"
 df = pd.read_csv(path)
-documents = [Document(content=row['body data'], metadata=dict(row)) for index, row in df.iterrows()]
+documents = [Document(content=row['bodyData'], metadata=dict(row)) for index, row in df.iterrows()]
 
 # Set up LanceDB vector store
 vector_store = LanceDBVectorStore(
