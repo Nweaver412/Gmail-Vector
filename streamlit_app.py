@@ -1,6 +1,8 @@
 import os
 import logging
 import streamlit as st
+import pandas as pd
+import numpy as np
 import lancedb
 
 from llama_index.chat_engine import CondenseQuestionChatEngine
@@ -18,9 +20,27 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize LanceDB
 db = lancedb.connect("out/files/embedded.csv")
-table = db["embedding"]
 
-# Create LanceDB vector store
+def string_to_list(s):
+    return np.fromstring(s.strip("[]"), sep=',')
+
+if "embeddings_table" not in db.table_names():
+    df = pd.read_csv("out/files/embedded.csv")
+    
+    if 'embedding' not in df.columns:
+        raise ValueError("The CSV file does not contain an 'embedding' column")
+    
+    df['embedding'] = df['embedding'].apply(string_to_list)
+    
+    embeddings_df = pd.DataFrame({
+        'id': range(len(df)),
+        'vector': df['embedding'].tolist()
+    })
+    
+    table = db.create_table("embeddings_table", data=embeddings_df)
+else:
+    table = db.open_table("embeddings_table")
+
 vector_store = LanceDBVectorStore(table)
 
 # Custom prompt for question condensing
