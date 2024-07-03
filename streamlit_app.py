@@ -25,7 +25,7 @@ def string_to_list(s):
     return np.fromstring(s.strip("[]"), sep=',')
 
 if "embeddings_table" not in db.table_names():
-    df = pd.read_csv("out/files/embedded.csv")
+    df = pd.read_csv("embedded.csv")
     
     if 'embedding' not in df.columns:
         raise ValueError("The CSV file does not contain an 'embedding' column")
