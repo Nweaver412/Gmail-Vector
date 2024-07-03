@@ -20,6 +20,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize LanceDB
 uri = "/data/in/files/embedded.csv"
+
 db = lancedb.connect(uri)
 
 df = pd.read_csv(uri)
