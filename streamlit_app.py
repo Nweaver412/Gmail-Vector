@@ -20,7 +20,9 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize LanceDB
 path = "/data/in/tables/embedded-gmail.csv"
-db = lancedb.connect("/data/lancedb")
+uri = "/data/lancedb"
+
+db = lancedb.connect(uri)
 
 df = pd.read_csv(path)
 
