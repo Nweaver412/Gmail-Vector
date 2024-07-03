@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import lancedb
 
+from llama_index.core import SimpleDirectoryReader, Document, StorageContext
 from llama_index.chat_engine import CondenseQuestionChatEngine
 from llama_index.chat_engine.condense_question import ChatMessage
 from langchain.callbacks import StreamlitCallbackHandler
@@ -20,7 +21,20 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize LanceDB
 path = "/data/in/tables/embedded-gmail.csv"
-vector_store = LanceDBVectorStore.from_csv(path=path, column_name='embedded_vector')
+df = pd.read_csv('your_csv_file.csv')
+documents = [Document(content=row['body data'], metadata=dict(row)) for index, row in df.iterrows()]
+
+# Set up LanceDB vector store
+vector_store = LanceDBVectorStore(
+    uri="./lancedb",
+    mode="overwrite",
+    query_type="hybrid"
+)
+storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+# Create and index documents
+index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
+
 
 # Custom prompt for question condensing
 custom_prompt = Prompt("""\
@@ -41,7 +55,6 @@ if "messages" not in st.session_state:
     st.session_state.messages.append({"role": "assistant", "content": ai_intro})
 
 # Create index and query engine
-index = VectorStoreIndex.from_vector_store(vector_store)
 query_engine = index.as_query_engine()
 
 # Create chat engine
