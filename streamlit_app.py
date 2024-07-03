@@ -19,29 +19,14 @@ logging.basicConfig(level=logging.INFO)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize LanceDB
-db = lancedb.connect("out/files/embedded.csv")
+uri = "out/files/embedded.csv"
+db = lancedb.connect(uri)
 
-def string_to_list(s):
-    return np.fromstring(s.strip("[]"), sep=',')
+df = pd.read_csv(uri)
 
-if "embeddings_table" not in db.table_names():
-    df = pd.read_csv("embedded.csv")
-    
-    if 'embedding' not in df.columns:
-        raise ValueError("The CSV file does not contain an 'embedding' column")
-    
-    df['embedding'] = df['embedding'].apply(string_to_list)
-    
-    embeddings_df = pd.DataFrame({
-        'id': range(len(df)),
-        'vector': df['embedding'].tolist()
-    })
-    
-    table = db.create_table("embeddings_table", data=embeddings_df)
-else:
-    table = db.open_table("embeddings_table")
+table = db.create_table("embeddings_table", data=df)
 
-vector_store = LanceDBVectorStore(table)
+vector_store = LanceDBVectorStore(table, embedding_field="embedding", text_field="bodyData")
 
 # Custom prompt for question condensing
 custom_prompt = Prompt("""\
