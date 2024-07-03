@@ -22,7 +22,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 uri = "out/files/embedded.csv"
 db = lancedb.connect(uri)
 
-df = pd.read_csv(uri)
+df = pd.read_csv("embedded.csv")
 
 table = db.create_table("embeddings_table", data=df)
 
