@@ -23,11 +23,7 @@ file_path = "/data/in/tables/embedded-gmail.csv"
 
 db = lancedb.connect(file_path)
 
-df = pd.read_csv(file_path)
-
-table = db.create_table("embeddings_table", data=df)
-
-vector_store = LanceDBVectorStore(table, embedding_field="embedding", text_field="bodyData")
+vector_store = LanceDBVectorStore(db, embedding_field="embedding", text_field="bodyData")
 
 # Custom prompt for question condensing
 custom_prompt = Prompt("""\
