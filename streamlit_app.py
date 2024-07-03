@@ -21,7 +21,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize LanceDB
 path = "/data/in/tables/embedded-gmail.csv"
-df = pd.read_csv('your_csv_file.csv')
+df = pd.read_csv(path)
 documents = [Document(content=row['body data'], metadata=dict(row)) for index, row in df.iterrows()]
 
 # Set up LanceDB vector store
@@ -34,7 +34,6 @@ storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 # Create and index documents
 index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
-
 
 # Custom prompt for question condensing
 custom_prompt = Prompt("""\
