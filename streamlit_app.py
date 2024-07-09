@@ -1,17 +1,21 @@
 import os
 import logging
+import openai
+import lancedb
+import lance
+
 import streamlit as st
 import pandas as pd
 import numpy as np
-import openai
-import lancedb
 
-from llama_index.core import SimpleDirectoryReader, Document, StorageContext
+from keboola.component import CommonInterface
+
+from llama_index import VectorStoreIndex, Document
+from llama_index.vector_stores import LanceDBVectorStore
+from llama_index.storage.storage_context import StorageContext
 from llama_index.chat_engine import CondenseQuestionChatEngine
 from llama_index.chat_engine.condense_question import ChatMessage
 from langchain.callbacks import StreamlitCallbackHandler
-from llama_index.vector_stores import LanceDBVectorStore
-from llama_index import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.prompts import Prompt
 from dotenv import load_dotenv
 
@@ -20,20 +24,12 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-# Initialize LanceDB
-path = "/data/in/tables/embedded-gmail.csv"
-df = pd.read_csv(path)
-documents = [Document(content=row['bodyData']) for index, row in df.iterrows()]
+# Initialize Keboola Common Interface
+ci = CommonInterface()
+input_files = ci.get_input_files_definitions(tags=['processed-lanceFile'], only_latest_files=True)
 
-# Set up LanceDB vector store
-vector_store = LanceDBVectorStore(
-    uri="./lancedb",
-    mode="overwrite",
-    query_type="hybrid"
-)
-storage_context = StorageContext.from_defaults(vector_store=vector_store)
-
-# Create and index documents
+# Connect to the Lance database
+db = lancedb.connect(input_files[0]['destination'])
 
 # Custom prompt for question condensing
 custom_prompt = Prompt("""\
@@ -53,8 +49,16 @@ if "messages" not in st.session_state:
     ai_intro = "Hello, I'm Kai, your AI SQL Bot. I'm here to assist you with SQL queries. What can I do for you?"
     st.session_state.messages.append({"role": "assistant", "content": ai_intro})
 
-# Create index and query engine
-index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
+# Create LanceDB vector store
+vector_store = LanceDBVectorStore(db.open_table("vectors"))
+
+# Create storage context
+storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+# Create index
+index = VectorStoreIndex.from_vector_store(vector_store, storage_context=storage_context)
+
+# Create query engine
 query_engine = index.as_query_engine()
 
 # Create chat engine
@@ -65,8 +69,7 @@ chat_engine = CondenseQuestionChatEngine.from_defaults(
 )
 
 # Streamlit UI
-user_input = st.chat_input("ask_a_question")
-
+user_input = st.chat_input("Ask a question")
 
 if user_input:
     # Add user message to the chat
@@ -81,22 +84,13 @@ if user_input:
     response = chat_engine.chat(user_input)
 
     # Add Kai's message to session state
-    st.session_state.messages.append({"role": "assistant", "content": response})
+    st.session_state.messages.append({"role": "assistant", "content": str(response)})
     # Display Kai's message
     with st.chat_message("Kai"):
-        st.markdown(response)
-        # Display source nodes for Kai's response
-        #st.write(response.source_nodes)
+        st.markdown(str(response))
 
+# Display chat history
 with st.container():    
-    last_output_message = []
-    last_user_message = []
-
-    for message in reversed(st.session_state.messages):
-        if message["role"] == "Kai":
-            last_output_message = message
-            break
-    for message in reversed(st.session_state.messages):
-        if message["role"] =="user":
-            last_user_message = message
-            break  
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
