@@ -2,10 +2,10 @@ import os
 import logging
 import openai
 import lance
+import zipfile
 import streamlit as st
 import pandas as pd
 import numpy as np
-import zipfile
 
 from keboola.component import CommonInterface
 
@@ -15,6 +15,7 @@ from llama_index.chat_engine import CondenseQuestionChatEngine
 from llama_index.embeddings.openai import OpenAIEmbedding
 from langchain.callbacks import StreamlitCallbackHandler
 from llama_index.prompts import Prompt
+
 from dotenv import load_dotenv
 
 # Load environment variables and set up logging
@@ -24,7 +25,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # zip_path = "in/files/1155854344_embedded_lance.zip"
 
-ci = CommonInterface()
+ci = CommonInterface(data_folder_path='/data')
 zip_path = ci.get_input_files_definitions(tags=['zipped_lance'], only_latest_files=True)
 
 extract_path = "out/files/"
@@ -35,19 +36,17 @@ with zipfile.ZipFile(zip_path, 'r') as zip_ref:
 # Load the Lance dataset from the extracted files
 ds = lance.dataset(extract_path)
 
-ci = CommonInterface()
-
 # Custom prompt for question condensing
-custom_prompt = Prompt("""\
-Given a conversation (between Human and Assistant) and a follow up message from Human, \
-rewrite the message to be a standalone question that captures all relevant context \
-from the conversation. 
-<Chat History> 
-{chat_history}
-<Follow Up Message>
-{question}
-<Standalone question>
-""")
+# custom_prompt = Prompt("""\
+# Given a conversation (between Human and Assistant) and a follow up message from Human, \
+# rewrite the message to be a standalone question that captures all relevant context \
+# from the conversation. 
+# <Chat History> 
+# {chat_history}
+# <Follow Up Message>
+# {question}
+# <Standalone question>
+# """)
 
 # Initialize session state
 if "messages" not in st.session_state:
