@@ -11,10 +11,8 @@ from keboola.component import CommonInterface
 
 from llama_index.core import VectorStoreIndex, Document, StorageContext
 from llama_index.vector_stores.lancedb import LanceDBVectorStore
-from llama_index.chat_engine import CondenseQuestionChatEngine
 from llama_index.embeddings.openai import OpenAIEmbedding
 from langchain.callbacks import StreamlitCallbackHandler
-from llama_index.prompts import Prompt
 
 from dotenv import load_dotenv
 
@@ -91,13 +89,6 @@ index = VectorStoreIndex.from_documents(
 # Create query engine
 query_engine = index.as_query_engine(embed_model=embed_model)
 
-# Create chat engine
-chat_engine = CondenseQuestionChatEngine.from_defaults(
-    query_engine=query_engine,
-    condense_question_prompt=custom_prompt,
-    verbose=True
-)
-
 # Streamlit UI
 st.title("Kai - Your AI Assistant")
 
@@ -115,7 +106,7 @@ if user_input:
         message_placeholder.markdown("Kai is typing...")
     
     st_callback = StreamlitCallbackHandler(st.container())
-    response = chat_engine.chat(user_input)
+    response = query_engine.chat(user_input)
 
     # Add Kai's message to session state
     st.session_state.messages.append({"role": "assistant", "content": str(response)})
