@@ -25,10 +25,11 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # zip_path = "in/files/1155854344_embedded_lance.zip"
 
-ci = CommonInterface(data_folder_path='/data')
+ci = CommonInterface()
 input_files = ci.get_input_files_definitions(tags=['zipped_lance'], only_latest_files=True)
 
 first_file = input_files[0]
+
 logging.info(f'The first file named: "{input_files.name}" is at path: {input_files.full_path}')
 
 # extract_path = "out/files/"
