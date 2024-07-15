@@ -37,16 +37,16 @@ with zipfile.ZipFile(zip_path, 'r') as zip_ref:
 ds = lance.dataset(extract_path)
 
 # Custom prompt for question condensing
-custom_prompt = Prompt("""\
-Given a conversation (between Human and Assistant) and a follow up message from Human, \
-rewrite the message to be a standalone question that captures all relevant context \
-from the conversation. 
-<Chat History> 
-{chat_history}
-<Follow Up Message>
-{question}
-<Standalone question>
-""")
+# custom_prompt = Prompt("""\
+# Given a conversation (between Human and Assistant) and a follow up message from Human, \
+# rewrite the message to be a standalone question that captures all relevant context \
+# from the conversation. 
+# <Chat History> 
+# {chat_history}
+# <Follow Up Message>
+# {question}
+# <Standalone question>
+# """)
 
 # Initialize session state
 if "messages" not in st.session_state:
