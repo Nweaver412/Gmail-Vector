@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import zipfile
 
-# from keboola.component import CommonInterface
+from keboola.component import CommonInterface
 
 from llama_index.core import VectorStoreIndex, Document, StorageContext
 from llama_index.vector_stores.lancedb import LanceDBVectorStore
@@ -22,8 +22,11 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-# Unzip the input file
-zip_path = "in/files/1155854344_embedded_lance.zip"
+# zip_path = "in/files/1155854344_embedded_lance.zip"
+
+ci = CommonInterface()
+zip_path = ci.get_input_files_definitions(tags=['zipped_lance'], only_latest_files=True)
+
 extract_path = "out/files/"
 
 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
