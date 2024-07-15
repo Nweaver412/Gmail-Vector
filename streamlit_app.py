@@ -29,8 +29,7 @@ ci = CommonInterface()
 input_files = ci.get_input_files_definitions(tags=['zipped_lance'], only_latest_files=True)
 
 first_file = input_files[0]
-
-logging.info(f'The first file named: "{input_files.name}" is at path: {input_files.full_path}')
+logging.info(f'The first file named: "{first_file.name}" is at path: {first_file.full_path}')
 
 # extract_path = "out/files/"
 
