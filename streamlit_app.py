@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import zipfile
 
-from keboola.component import CommonInterface
+# from keboola.component import CommonInterface
 
 from llama_index.core import VectorStoreIndex, Document, StorageContext
 from llama_index.vector_stores.lancedb import LanceDBVectorStore
