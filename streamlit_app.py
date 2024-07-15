@@ -39,16 +39,16 @@ with zipfile.ZipFile(zip_path, 'r') as zip_ref:
 ds = lance.dataset(extract_path)
 
 # Custom prompt for question condensing
-# custom_prompt = Prompt("""\
-# Given a conversation (between Human and Assistant) and a follow up message from Human, \
-# rewrite the message to be a standalone question that captures all relevant context \
-# from the conversation. 
-# <Chat History> 
-# {chat_history}
-# <Follow Up Message>
-# {question}
-# <Standalone question>
-# """)
+custom_prompt = Prompt("""\
+Given a conversation (between Human and Assistant) and a follow up message from Human, \
+rewrite the message to be a standalone question that captures all relevant context \
+from the conversation. 
+<Chat History> 
+{chat_history}
+<Follow Up Message>
+{question}
+<Standalone question>
+""")
 
 # Initialize session state
 if "messages" not in st.session_state:
@@ -57,7 +57,7 @@ if "messages" not in st.session_state:
     st.session_state.messages.append({"role": "assistant", "content": ai_intro})
 
 # Create embedding model
-embed_model = OpenAIEmbedding(model="text-embedding-3-large", embed_batch_size=100)
+embed_model = OpenAIEmbedding(model="text-embedding-ada-002", embed_batch_size=100)
 
 def re_embed_text(text):
     return embed_model.get_text_embedding(text)
