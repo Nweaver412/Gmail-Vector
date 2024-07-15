@@ -57,36 +57,35 @@ if "messages" not in st.session_state:
 # Create embedding model
 embed_model = OpenAIEmbedding(model="text-embedding-ada-002", embed_batch_size=100)
 
-def re_embed_text(text):
-    return embed_model.get_text_embedding(text)
-
-# Create documents from Lance dataset and re-embed the text
 documents = []
+
+# Creates doc arr, each doc labeled with id, text from db text and embedding from db vector
+# Doc id generated pseudo randomly from batch and indeces
+
 for i, batch in enumerate(ds.to_batches()):
     for j, row in enumerate(batch.to_pylist()):
         doc_id = str(i * len(batch) + j)
-        new_embedding = re_embed_text(row['text'])
-        documents.append(Document(doc_id=doc_id, text=row['text'], embedding=new_embedding))
+        documents.append(Document(doc_id=doc_id, text=row['text'], embedding=row['vector']))
 
-# Create LanceDBVectorStore
+# Vector Store
 vector_store = LanceDBVectorStore(
     uri="./lancedb",
     mode="overwrite",
     query_type="hybrid",
-    dimension=3072
+    dimension=3072 
 )
 
-# Create storage context
+# Store
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
-# Create index
+# Index
 index = VectorStoreIndex.from_documents(
     documents, 
     storage_context=storage_context, 
     embed_model=embed_model
 )
 
-# Create query engine
+# Engine
 query_engine = index.as_query_engine(embed_model=embed_model)
 
 # Streamlit UI
