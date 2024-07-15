@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Unzip the input file
-zip_path = "embedded_lance.zip"
+zip_path = "in/files/1155854344_embedded_lance.zip"
 extract_path = "out/files/"
 
 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
