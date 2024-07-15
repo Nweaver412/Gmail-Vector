@@ -26,15 +26,18 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 # zip_path = "in/files/1155854344_embedded_lance.zip"
 
 ci = CommonInterface(data_folder_path='/data')
-zip_path = ci.get_input_files_definitions(tags=['zipped_lance'], only_latest_files=True)
+input_files = ci.get_input_files_definitions(tags=['zipped_lance'], only_latest_files=True)
 
-extract_path = "out/files/"
+first_file = input_files[0]
+logging.info(f'The first file named: "{input_files.name}" is at path: {input_files.full_path}')
 
-with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-    zip_ref.extractall(extract_path)
+# extract_path = "out/files/"
 
-# Load the Lance dataset from the extracted files
-ds = lance.dataset(extract_path)
+# with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+#     zip_ref.extractall(extract_path)
+
+# # Load the Lance dataset from the extracted files
+# ds = lance.dataset(extract_path)
 
 # Custom prompt for question condensing
 # custom_prompt = Prompt("""\
@@ -49,79 +52,79 @@ ds = lance.dataset(extract_path)
 # """)
 
 # Initialize session state
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-    ai_intro = "Hello, I'm Kai, your AI Assistant. I'm here to help you with your questions. What can I do for you?"
-    st.session_state.messages.append({"role": "assistant", "content": ai_intro})
+# if "messages" not in st.session_state:
+#     st.session_state.messages = []
+#     ai_intro = "Hello, I'm Kai, your AI Assistant. I'm here to help you with your questions. What can I do for you?"
+#     st.session_state.messages.append({"role": "assistant", "content": ai_intro})
 
-# Create embedding model
-embed_model = OpenAIEmbedding(model="text-embedding-3-large", embed_batch_size=100)
+# # Create embedding model
+# embed_model = OpenAIEmbedding(model="text-embedding-3-large", embed_batch_size=100)
 
-def re_embed_text(text):
-    return embed_model.get_text_embedding(text)
+# def re_embed_text(text):
+#     return embed_model.get_text_embedding(text)
 
-# Create documents from Lance dataset and re-embed the text
-documents = []
-for i, batch in enumerate(ds.to_batches()):
-    for j, row in enumerate(batch.to_pylist()):
-        doc_id = str(i * len(batch) + j)
-        new_embedding = re_embed_text(row['text'])
-        documents.append(Document(doc_id=doc_id, text=row['text'], embedding=new_embedding))
+# # Create documents from Lance dataset and re-embed the text
+# documents = []
+# for i, batch in enumerate(ds.to_batches()):
+#     for j, row in enumerate(batch.to_pylist()):
+#         doc_id = str(i * len(batch) + j)
+#         new_embedding = re_embed_text(row['text'])
+#         documents.append(Document(doc_id=doc_id, text=row['text'], embedding=new_embedding))
 
-# Create LanceDBVectorStore
-vector_store = LanceDBVectorStore(
-    uri="./lancedb",
-    mode="overwrite",
-    query_type="hybrid",
-    dimension=3072
-)
+# # Create LanceDBVectorStore
+# vector_store = LanceDBVectorStore(
+#     uri="./lancedb",
+#     mode="overwrite",
+#     query_type="hybrid",
+#     dimension=3072
+# )
 
-# Create storage context
-storage_context = StorageContext.from_defaults(vector_store=vector_store)
+# # Create storage context
+# storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
-# Create index
-index = VectorStoreIndex.from_documents(
-    documents, 
-    storage_context=storage_context, 
-    embed_model=embed_model
-)
+# # Create index
+# index = VectorStoreIndex.from_documents(
+#     documents, 
+#     storage_context=storage_context, 
+#     embed_model=embed_model
+# )
 
-# Create query engine
-query_engine = index.as_query_engine(embed_model=embed_model)
+# # Create query engine
+# query_engine = index.as_query_engine(embed_model=embed_model)
 
-# Create chat engine
-chat_engine = CondenseQuestionChatEngine.from_defaults(
-    query_engine=query_engine,
-    condense_question_prompt=custom_prompt,
-    verbose=True
-)
+# # Create chat engine
+# chat_engine = CondenseQuestionChatEngine.from_defaults(
+#     query_engine=query_engine,
+#     condense_question_prompt=custom_prompt,
+#     verbose=True
+# )
 
-# Streamlit UI
-st.title("Kai - Your AI Assistant")
+# # Streamlit UI
+# st.title("Kai - Your AI Assistant")
 
-user_input = st.chat_input("Ask a question")
+# user_input = st.chat_input("Ask a question")
 
-if user_input:
-    # Add user message to the chat
-    with st.chat_message("user"):
-        st.markdown(user_input)
-    # Add user message to session state
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    # Display "Kai is typing..."
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        message_placeholder.markdown("Kai is typing...")
+# if user_input:
+#     # Add user message to the chat
+#     with st.chat_message("user"):
+#         st.markdown(user_input)
+#     # Add user message to session state
+#     st.session_state.messages.append({"role": "user", "content": user_input})
+#     # Display "Kai is typing..."
+#     with st.chat_message("assistant"):
+#         message_placeholder = st.empty()
+#         message_placeholder.markdown("Kai is typing...")
     
-    st_callback = StreamlitCallbackHandler(st.container())
-    response = chat_engine.chat(user_input)
+#     st_callback = StreamlitCallbackHandler(st.container())
+#     response = chat_engine.chat(user_input)
 
-    # Add Kai's message to session state
-    st.session_state.messages.append({"role": "assistant", "content": str(response)})
-    # Display Kai's message
-    message_placeholder.markdown(str(response))
+#     # Add Kai's message to session state
+#     st.session_state.messages.append({"role": "assistant", "content": str(response)})
+#     # Display Kai's message
+#     message_placeholder.markdown(str(response))
 
-# Display chat history
-with st.container():    
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+# # Display chat history
+# with st.container():    
+#     for message in st.session_state.messages:
+#         with st.chat_message(message["role"]):
+#             st.markdown(message["content"])
