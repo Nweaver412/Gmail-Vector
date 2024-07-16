@@ -89,20 +89,28 @@ if user_input:
     # Add user message to session state
     st.session_state.messages.append({"role": "user", "content": user_input})
     # Display "Kai is typing..."
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        message_placeholder.markdown("Kai is typing...")
-    
+    with st.chat_message("Kai"):
+        st.markdown("typing")
     st_callback = StreamlitCallbackHandler(st.container())
     response = query_engine.query(user_input)
 
     # Add Kai's message to session state
-    st.session_state.messages.append({"role": "assistant", "content": str(response)})
+    st.session_state.messages.append({"role": "assistant", "content": response})
     # Display Kai's message
-    message_placeholder.markdown(str(response))
+    with st.chat_message("Kai"):
+        st.markdown(response)
+        # Display source nodes for Kai's response
+        #st.write(response.source_nodes)
 
-# Display chat history
 with st.container():    
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    last_output_message = []
+    last_user_message = []
+
+    for message in reversed(st.session_state.messages):
+        if message["role"] == "Kai":
+            last_output_message = message
+            break
+    for message in reversed(st.session_state.messages):
+        if message["role"] =="user":
+            last_user_message = message
+            break  
