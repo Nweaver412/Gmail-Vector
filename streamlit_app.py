@@ -113,7 +113,7 @@ if user_input:
     message_placeholder.markdown(str(response))
 
 # Display chat history
-with st.container():    
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+# with st.container():    
+#     for message in st.session_state.messages:
+#         with st.chat_message(message["role"]):
+#             st.markdown(message["content"])
