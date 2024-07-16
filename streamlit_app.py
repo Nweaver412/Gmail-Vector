@@ -105,7 +105,7 @@ if user_input:
         message_placeholder.markdown("Kai is typing...")
     
     st_callback = StreamlitCallbackHandler(st.container())
-    response = query_engine.chat(user_input)
+    response = query_engine.query(user_input)
 
     # Add Kai's message to session state
     st.session_state.messages.append({"role": "assistant", "content": str(response)})
