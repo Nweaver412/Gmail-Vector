@@ -21,32 +21,22 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-
+# Keboola Input
 ci = CommonInterface()
 input_files = ci.get_input_files_definitions(tags=['zipped_lance'], only_latest_files=True)
 
+# Find latest path
 first_file = input_files[0]
 zip_path = first_file.full_path
 
 extract_path = "out/files/"
 
+# Unzip the Lance dataset
 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
     zip_ref.extractall(extract_path)
 
 # Load the Lance dataset from the extracted files
 ds = lance.dataset(extract_path)
-
-# Custom prompt for question condensing
-# custom_prompt = Prompt("""\
-# Given a conversation (between Human and Assistant) and a follow up message from Human, \
-# rewrite the message to be a standalone question that captures all relevant context \
-# from the conversation. 
-# <Chat History> 
-# {chat_history}
-# <Follow Up Message>
-# {question}
-# <Standalone question>
-# """)
 
 # Initialize session state
 if "messages" not in st.session_state:
@@ -57,11 +47,10 @@ if "messages" not in st.session_state:
 # Create embedding model
 embed_model = OpenAIEmbedding(model="text-embedding-3-large", embed_batch_size=100)
 
-documents = []
 
 # Creates doc arr, each doc labeled with id, text from db text and embedding from db vector
 # Doc id generated pseudo randomly from batch and indeces
-
+documents = []
 for i, batch in enumerate(ds.to_batches()):
     for j, row in enumerate(batch.to_pylist()):
         doc_id = str(i * len(batch) + j)
