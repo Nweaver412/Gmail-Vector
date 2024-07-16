@@ -55,7 +55,7 @@ if "messages" not in st.session_state:
     st.session_state.messages.append({"role": "assistant", "content": ai_intro})
 
 # Create embedding model
-embed_model = OpenAIEmbedding(model="text-embedding-ada-002", embed_batch_size=100)
+embed_model = OpenAIEmbedding(model="text-embedding-3-large", embed_batch_size=100)
 
 documents = []
 
